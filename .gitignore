@@ -1,0 +1,10 @@
+Python
+venv/
+pycache/
+*.pyc
+.env
+.env.local
+*.sqlite3
+node_modules/
+dist/
+frontend/node_modules/
