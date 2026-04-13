@@ -1,1 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bar Analytics — Landing</title>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#0b0b0c; --card:#151515; --muted:#9a9a9a; --accent:#13c56a; --accent2:#ffb020;
+  --blue:#2186ff; --card-radius:14px; --text:#ffffff;
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+html,body{height:100%;margin:0;background:linear-gradient(#070707,#0f0f10);color:var(--text)}
+.container{max-width:1200px;margin:28px auto;padding:0 20px;display:flex;flex-direction:column;gap:22px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.brand h1{margin:0;font-size:26px}
+.brand p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.controls{display:flex;gap:12px;align-items:center}
+.btn{background:#161616;color:#fff;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+.btn.blue{background:var(--blue)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 1px 0 rgba(255,255,255,0.02) inset}
+.card .title{color:var(--muted);font-size:13px;margin-bottom:8px}
+.card .value{font-size:28px;margin-bottom:6px}
+.card .sub{color:var(--muted);font-size:13px}
+.card .green{color:var(--accent)}
+.card .icon{opacity:0.12}
+
+/* Big panels */
+.panel{background:var(--card);padding:18px;border-radius:12px}
+.panel .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.panel .title{font-size:18px;font-weight:600;color:#eafbf0}
+.panel .live{color:var(--muted);font-size:13px}
+.big-number{font-size:44px;margin-bottom:6px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.progress{height:14px;background:#222;border-radius:999px;overflow:hidden;margin:12px 0}
+.progress .fill{height:100%;width:0;border-radius:999px;transition:width .8s cubic-bezier(.2,.9,.3,1)}
+.fill.green{background:linear-gradient(90deg,var(--accent),#06d46a)}
+.fill.yellow{background:linear-gradient(90deg,var(--accent2),#ff9a2a)}
+.alert{margin-top:12px;padding:12px;border-radius:10px;background:rgba(16,64,34,0.22);color:#bff7cf;border:1px solid rgba(100,200,140,0.06)}
+
+/* two-column grids */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-2 .panel{min-height:160px}
+
+/* charts area */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart-card{padding:18px;background:var(--card);border-radius:12px}
+.chart-canvas{width:100%;height:220px}
+
+/* lists */
+.list-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.list{background:var(--card);padding:18px;border-radius:12px}
+.list .item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.02)}
+.list .item:last-child{border-bottom:0}
+.list .left{color:#fff}
+.list .meta{color:var(--muted);font-size:13px}
+.list .price{color:var(--accent);font-weight:700}
+
+/* staff & events */
+.side-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* recommendations */
+.reco-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.reco{background:var(--card);padding:18px;border-radius:12px}
+.reco h4{margin:0 0 6px 0}
+.badge{display:inline-block;padding:6px 8px;border-radius:8px;font-size:12px;background:#123;background-color:rgba(33,134,255,0.12);color:var(--blue);margin-left:8px}
+
+/* bottom optimization groups */
+.opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+
+/* responsive */
+@media(max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+@media(max-width:620px){
+  .kpis{grid-template-columns:1fr}
+  .reco-grid{grid-template-columns:1fr}
+  .opt-grid{grid-template-columns:1fr}
+}
+.small-muted{color:var(--muted);font-size:13px}
+.footer{color:var(--muted);text-align:center;padding:18px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">
+        <h1>Bar Analytics</h1>
+        <p>Real-time insights to increase sales</p>
+      </div>
+      <div class="controls">
+        <button class="btn blue">AI Assistant</button>
+        <div class="btn">This Week ▾</div>
+      </div>
+    </header>
+
+    <!-- KPI cards -->
+    <section class="kpis" aria-label="Key metrics">
+      <div class="card">
+        <div class="title">Total Traffic</div>
+        <div class="value" id="k-total">3,353</div>
+        <div class="sub green">↗ +12% vs last week</div>
+      </div>
+
+      <div class="card">
+        <div class="title">Avg Daily Traffic</div>
+        <div class="value" id="k-daily">479</div>
+        <div class="sub">visitors per day</div>
+      </div>
+
+      <div class="card">
+        <div class="title">Peak Hour</div>
+        <div class="value" id="k-peak">9pm</div>
+        <div class="sub">156 visitors</div>
+      </div>
+
+      <div class="card">
+        <div class="title">Gender Ratio</div>
+        <div class="value" id="k-gender">52%M</div>
+        <div class="sub">48% women</div>
+      </div>
+    </section>
+
+    <!-- Occupancy & Revenue -->
+    <section class="grid-2">
+      <div class="panel">
+        <div class="head">
+          <div class="title">Live Occupancy</div>
+          <div class="live">● Live</div>
+        </div>
+        <div class="big-number"><span id="occ-current">139</span> <span class="muted" id="occ-max">/ 250 people</span></div>
+        <div class="muted small" id="occ-pct">56% capacity</div>
+        <div class="progress" aria-hidden="true">
+          <div id="occ-fill" class="fill yellow" style="width:0%"></div>
+        </div>
+        <div class="small-muted">Real-time count updated every minute.</div>
+      </div>
+
+      <div class="panel">
+        <div class="head">
+          <div class="title">Today's Revenue</div>
+          <div class="live">● Live</div>
+        </div>
+        <div class="big-number" id="rev-today">$16,817</div>
+        <div class="muted small" id="rev-target">Target: $8,500 (198%)</div>
+        <div class="progress" aria-hidden="true">
+          <div id="rev-fill" class="fill green" style="width:0%"></div>
+        </div>
+        <div class="alert" id="rev-alert">🎉 Target achieved! $8,317 over goal</div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+      <div class="chart-card">
+        <div class="small-muted" style="margin-bottom:8px">Hourly Foot Traffic</div>
+        <canvas id="chart-hourly" class="chart-canvas"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="small-muted" style="margin-bottom:8px">Weekly Traffic Trend</div>
+        <canvas id="chart-weekly" class="chart-canvas"></canvas>
+      </div>
+    </section>
+
+    <section class="charts" style="margin-top:0">
+      <div class="chart-card">
+        <div class="small-muted" style="margin-bottom:8px">Gender Distribution</div>
+        <canvas id="chart-gender" class="chart-canvas" style="height:200px"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="small-muted" style="margin-bottom:8px">Hourly Gender Breakdown</div>
+        <canvas id="chart-gender-hour" class="chart-canvas"></canvas>
+      </div>
+    </section>
+
+    <!-- Top & Least selling -->
+    <section class="list-grid">
+      <div class="list">
+        <div class="title" style="font-weight:700;margin-bottom:12px;color:#c9f7dd">Top Selling Items</div>
+        <div class="item"><div><div class="left">#1 IPA Beer <div class="meta">342 sold</div></div></div><div class="price">$2,394</div></div>
+        <div class="item"><div><div class="left">#2 Vodka Soda <div class="meta">298 sold</div></div></div><div class="price">$2,086</div></div>
+        <div class="item"><div><div class="left">#3 Whiskey Neat <div class="meta">256 sold</div></div></div><div class="price">$2,304</div></div>
+        <div class="item"><div><div class="left">#4 Margarita <div class="meta">234 sold</div></div></div><div class="price">$2,106</div></div>
+        <div class="item"><div><div class="left">#5 Wings <div class="meta">187 sold</div></div></div><div class="price">$2,244</div></div>
+      </div>
+
+      <div class="list">
+        <div class="title" style="font-weight:700;margin-bottom:12px;color:#ffd6d6">Least Selling Items</div>
+        <div class="item"><div class="left">#1 Champagne <div class="meta">12 sold</div></div><div class="price" style="color:#f7c6c6">$360</div></div>
+        <div class="item"><div class="left">#2 Cognac <div class="meta">18 sold</div></div><div class="price" style="color:#f7c6c6">$450</div></div>
+        <div class="item"><div class="left">#3 Vegan Burger <div class="meta">23 sold</div></div><div class="price" style="color:#f7c6c6">$322</div></div>
+        <div class="item"><div class="left">#4 Salad <div class="meta">28 sold</div></div><div class="price" style="color:#f7c6c6">$308</div></div>
+        <div class="item"><div class="left">#5 Wine Spritzer <div class="meta">31 sold</div></div><div class="price" style="color:#f7c6c6">$279</div></div>
+      </div>
+    </section>
+
+    <!-- Staff & Events -->
+    <section class="side-grid">
+      <div class="panel">
+        <div class="title" style="margin-bottom:10px;color:#d6c6ff">Staff Performance</div>
+        <div class="muted small" style="margin-bottom:8px">Top performers by revenue</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><strong>Marcus</strong><div class="meta">156 orders · $21.92 avg ticket</div></div><div style="float:right;color:var(--accent);font-weight:700">$3,420</div>
+          <div style="height:1px"></div>
+          <div><strong>Sarah</strong><div class="meta">142 orders · $22.39 avg ticket</div></div><div style="float:right;color:var(--accent);font-weight:700">$3,180</div>
+          <div style="height:1px"></div>
+          <div><strong>Jordan</strong><div class="meta">138 orders · $20.94 avg ticket</div></div><div style="float:right;color:var(--accent);font-weight:700">$2,890</div>
+          <div style="height:1px"></div>
+          <div><strong>Alex</strong><div class="meta">128 orders · $20.70 avg ticket</div></div><div style="float:right;color:var(--accent);font-weight:700">$2,650</div>
+          <div style="height:1px"></div>
+          <div><strong>Taylor</strong><div class="meta">119 orders · $19.66 avg ticket</div></div><div style="float:right;color:var(--accent);font-weight:700">$2,340</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="title" style="margin-bottom:10px;color:#ffd9b6">Event Performance</div>
+        <div class="muted small" style="margin-bottom:8px">Events that drive attendance</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div><strong>Live DJ</strong><div class="meta">Every Friday · 687 visitors</div></div><div style="float:right;color:var(--accent);font-weight:700">$8,450</div>
+          <div style="height:1px"></div>
+          <div><strong>Trivia Night</strong><div class="meta">Every Wednesday · 412 visitors</div></div><div style="float:right;color:var(--accent);font-weight:700">$4,230</div>
+          <div style="height:1px"></div>
+          <div><strong>Ladies Night</strong><div class="meta">Every Tuesday · 523 visitors</div></div><div style="float:right;color:var(--accent);font-weight:700">$5,100</div>
+          <div style="height:1px"></div>
+          <div><strong>Regular Night</strong><div class="meta">Mon/Thu · 398 visitors</div></div><div style="float:right;color:var(--accent);font-weight:700">$3,850</div>
+          <div style="height:1px"></div>
+          <div><strong>Sports Viewing</strong><div class="meta">Game Days · 589 visitors</div></div><div style="float:right;color:var(--accent);font-weight:700">$6,780</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recommendations -->
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-weight:700;font-size:18px">Recommendations</div>
+        <div class="small-muted">Prioritized actions to increase revenue</div>
+      </div>
+
+      <div class="reco-grid">
+        <div class="reco">
+          <h4>Launch Ladies Night on Tuesdays <span class="badge" style="background:#123e1f;color:#bff7cf">high impact</span></h4>
+          <p class="small-muted">Tuesday shows lowest traffic (298 visitors). Gender ratio is 52% men / 48% women. Offer drink specials for women to boost attendance.</p>
+        </div>
+
+        <div class="reco">
+          <h4>Extend Happy Hour to 7pm <span class="badge" style="background:rgba(33,134,255,0.12);color:var(--blue)">medium impact</span></h4>
+          <p class="small-muted">Traffic jumps 50% between 6pm-7pm. Move happy hour from 4-6pm to 5-7pm to capture peak arrival time.</p>
+        </div>
+
+        <div class="reco">
+          <h4>Add Live Music on Thursdays <span class="badge" style="background:#123e1f;color:#bff7cf">high impact</span></h4>
+          <p class="small-muted">Thursday traffic (456) is 25% lower than Friday despite good gender balance. Book local bands 8-11pm to position Thursday as kickoff night.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Optimization blocks -->
+    <section class="opt-grid" style="margin-top:18px">
+      <div class="reco panel">
+        <h4 style="margin-top:0">Create IPA Flight Promotion <span class="badge" style="background:#123e1f;color:#bff7cf">high impact</span></h4>
+        <p class="small-muted">IPAs are your top seller (342 sold, $2,394). Introduce a craft IPA flight for $18 to upsell customers and increase average ticket by 25%.</p>
+      </div>
+      <div class="reco panel">
+        <h4 style="margin-top:0">Rebrand Low Performers as Premium <span class="badge" style="background:rgba(33,134,255,0.12);color:var(--blue)">medium impact</span></h4>
+        <p class="small-muted">Champagne and Cognac have low sales but high per-unit value. Market as "VIP Bottle Service" to attract high spenders.</p>
+      </div>
+      <div class="reco panel">
+        <h4 style="margin-top:0">Bundle Wings with Beer Specials <span class="badge" style="background:#123e1f;color:#bff7cf">high impact</span></h4>
+        <p class="small-muted">Wings ($2,244) and IPAs perform well. Offer "Beer + Wings" combo for $15 during happy hour to increase attachment rate.</p>
+      </div>
+    </section>
+
+    <div class="footer small-muted">Tip: edit numbers in the script section to update the dashboard values. Built to match provided screenshots.</div>
+  </div>
+
+<script>
+/* ========= Sample data (edit values here) ========= */
+const DATA = {
+  kpis: { total: "3,353", daily: "479", peak: "9pm", gender: "52%M" },
+  occupancy: { current: 139, max: 250 },
+  revenue: { today: 16817, target: 8500 },
+  hourly: { labels: ['1am','3am','5am','7am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
+            men: [2,1,1,1,2,3,6,12,40,80,160,120] },
+  weekly: { labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values:[320,280,387,420,600,720,500] },
+  genderDist: { labels:['Men','Women'], values:[52,48] },
+  genderHourly: { labels:['1am','3am','5am','7am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
+                 men: [2,1,1,1,2,3,6,12,40,50,80,60], women: [1,1,1,1,1,2,5,8,30,40,75,50] }
+};
+/* ================================================ */
+
+/* Occupancy & revenue progress */
+(function initProgress(){
+  const occPct = Math.round(DATA.occupancy.current / DATA.occupancy.max * 100);
+  document.getElementById('occ-current').textContent = DATA.occupancy.current;
+  document.getElementById('occ-max').textContent = '/ ' + DATA.occupancy.max + ' people';
+  document.get
 
