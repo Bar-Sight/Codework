@@ -2,9 +2,3 @@ fastapi
 uvicorn
 pydantic
 requests
-Commit both files (e.g., "chore: add FastAPI starter and requirements"). After committing, to run locally:
-Clone repo (if not already)
-python -m venv venv
-source venv/bin/activate (Windows: venv\Scripts\activate)
-pip install -r requirements.txt
-uvicorn app.main:app --reload

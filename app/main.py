@@ -4,6 +4,8 @@ from typing import Optional
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 
+
+app = FastAPI(title="BarSight API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
