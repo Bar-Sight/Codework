@@ -51,5 +51,5 @@ def main():
             post_sale()
             next_sale = now + SALE_INTERVAL
         time.sleep(0.5)
-if name == "main":
+if __name__ == "__main__":
     main()
