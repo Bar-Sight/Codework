@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bar Analytics</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #111111;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left h1 { font-size: 20px; font-weight: 600; }
+    .header-left p  { font-size: 13px; color: #888; margin-top: 2px; }
+    .header-right   { display: flex; gap: 10px; align-items: center; }
+
+    .btn-ai {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-week {
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .content { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .icon { font-size: 18px; }
+
+    /* ── STAT CARDS ROW ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #2a2a2a;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-value { font-size: 32px; font-weight: 700; line-height: 1; }
+    .stat-sub   { font-size: 12px; color: #888; margin-top: 6px; }
+    .stat-up    { font-size: 12px; color: #22c55e; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+    /* ── WIDE CARDS ── */
+    .wide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .wide-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .wide-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .wide-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .live-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .live-label { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; }
+
+    .big-value { font-size: 40px; font-weight: 700; }
+    .sub-text  { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .progress-bar-wrap { background: #333; border-radius: 6px; height: 8px; margin: 14px 0; overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: 6px; }
+    .orange { background: #f97316; }
+    .green  { background: #22c55e; }
+
+    .success-box {
+      background: #14532d33;
+      border: 1px solid #22c55e44;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #22c55e;
+      margin-top: 4px;
+    }
+
+    /* ── CHARTS ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .chart-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .chart-wrap { position: relative; height: 220px; }
+
+    /* ── ITEMS LISTS ── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .items-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .items-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-rank { font-size: 12px; color: #555; width: 24px; }
+    .item-info { flex: 1; padding: 0 12px; }
+    .item-name { font-size: 14px; font-weight: 500; }
+    .item-sold { font-size: 12px; color: #888; margin-top: 2px; }
+    .item-revenue { font-size: 14px; font-weight: 600; }
+    .green-text { color: #22c55e; }
+    .gray-text  { color: #aaa; }
+
+    /* ── PERFORMANCE ── */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .perf-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .perf-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .perf-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .perf-row:last-child { border-bottom: none; }
+    .perf-num {
+      width: 32px; height: 32px;
+      background: #2a2a2a;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .perf-info { flex: 1; padding: 0 14px; }
+    .perf-name { font-size: 14px; font-weight: 500; }
+    .perf-sub  { font-size: 12px; color: #888; margin-top: 2px; }
+    .perf-right { display: flex; align-items: center; gap: 8px; }
+    .perf-val  { font-size: 14px; font-weight: 600; }
+
+    .event-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .event-row:last-child { border-bottom: none; }
+    .event-name { font-size: 14px; font-weight: 500; }
+    .event-freq { font-size: 12px; color: #888; margin-top: 2px; }
+    .event-right { text-align: right; }
+    .event-visitors { font-size: 12px; color: #888; margin-top: 2px; }
+
+    /* ── RECOMMENDATIONS ── */
+    .recs-section { margin-bottom: 28px; }
+    .recs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .rec-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .rec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      gap: 12px;
+    }
+    .rec-title { font-size: 15px; font-weight: 600; }
+    .badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-high   { background: #166534; color: #4ade80; }
+    .badge-medium { background: #1e3a5f; color: #60a5fa; }
+    .rec-body { font-size: 13px; color: #aaa; line-height: 1.6; }
+
+    /* ── OPTIMIZATION ── */
+    .opt-section { margin-bottom: 28px; }
+    .opt-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .opt-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid #2a2a2a;
+    }
+    .opt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .opt-title { font-size: 14px; font-weight: 600; }
+    .opt-body  { font-size: 12px; color: #aaa; line-height: 1.6; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: #2a2a2a; margin: 28px 0; }
+
+    /* ── CHART LEGEND ── */
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .wide-grid, .charts-grid, .items-grid, .perf-grid, .recs-grid { grid-template-columns: 1fr; }
+      .opt-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="header">
+  <div class="header-left">
+    <h1>Bar Analytics</h1>
+    <p>Real-time insights to increase sales</p>
+  </div>
+  <div class="header-right">
+    <button class="btn-ai">💬 AI Assistant</button>
+    <button class="btn-week">This Week ▾</button>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- ══ STAT CARDS ══ -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Traffic <span>👥</span></div>
+      <div class="stat-value">3,353</div>
+      <div class="stat-up">↗ +12% vs last week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Daily Traffic <span>👤</span></div>
+      <div class="stat-value">479</div>
+      <div class="stat-sub">visitors per day</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Peak Hour <span>🕘</span></div>
+      <div class="stat-value">9pm</div>
+      <div class="stat-sub">156 visitors</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gender Ratio <span>👤</span></div>
+      <div class="stat-value">52%M</div>
+      <div class="stat-sub">48% women</div>
+    </div>
+  </div>
+
+  <!-- ══ LIVE OCCUPANCY + REVENUE ══ -->
+  <div class="wide-grid">
+    <div class="wide-card">
+      <div class="wide-card-header">
+        <div class="wide-card-title">⚡ Live Occupancy</div>
+        <div class="live-label"><span class="live-dot"></span> Live</div>
+      </div>
+      <div class="big-value">180 <span style="font-size:20px;font-weight:400;color:#888;">/ 250 people</span></div>
+      <div class="sub-text">72% capacity</div>
+      <div class="progress-bar-wrap" style="margin-top:16px;">
+        <div class="progress-bar orange" style="width:72%;"></div>
+      </div>
+    </div>
+
+    <div class="wide-card">
+      <div class="wide-card-header">
+        <div class="wide-card-title">🎯 Today's Revenue</div>
+        <div class="live-label"><span class="live-dot"></span> Live</div>
+      </div>
+      <div class="big-value">$16,817</div>
+      <div class="sub-text">Target: $8,500 (198%)</div>
+      <div class="progress-bar-wrap" style="margin-top:16px;">
+        <div class="progress-bar green" style="width:100%;"></div>
+      </div>
+      <div class="success-box">🎉 Target achieved! $8,317 over goal</div>
+    </div>
+  </div>
+
+  <!-- ══ CHARTS ══ -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Hourly Foot Traffic</h3>
+      <div class="chart-wrap">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Weekly Traffic Trend</h3>
+      <div class="chart-wrap">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Gender Distribution</h3>
+      <div class="chart-wrap">
+        <canvas id="genderPieChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Hourly Gender Breakdown</h3>
+      <div class="chart-wrap">
+        <canvas id="genderBarChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span><span class="legend-dot" style="background:#4d94ff;"></span>men</span>
+        <span><span class="legend-dot" style="background:#ff4da6;"></span>women</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOP / LEAST SELLING ══ -->
+  <div class="items-grid">
+    <div class="items-card">
+      <h3><span style="color:#22c55e;">$</span> Top Selling Items</h3>
+      <div class="item-row">
+        <span class="item-rank">#1</span>
+        <div class="item-info">
+          <div class="item-name">IPA Beer</div>
+          <div class="item-sold">342 sold</div>
+        </div>
+        <span class="item-revenue green-text">$2,394</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#2</span>
+        <div class="item-info">
+          <div class="item-name">Vodka Soda</div>
+          <div class="item-sold">298 sold</div>
+        </div>
+        <span class="item-revenue green-text">$2,086</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#3</span>
+        <div class="item-info">
+          <div class="item-name">Whiskey Neat</div>
+          <div class="item-sold">256 sold</div>
+        </div>
+        <span class="item-revenue green-text">$2,304</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#4</span>
+        <div class="item-info">
+          <div class="item-name">Margarita</div>
+          <div class="item-sold">234 sold</div>
+        </div>
+        <span class="item-revenue green-text">$2,106</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#5</span>
+        <div class="item-info">
+          <div class="item-name">Wings</div>
+          <div class="item-sold">187 sold</div>
+        </div>
+        <span class="item-revenue green-text">$2,244</span>
+      </div>
+    </div>
+
+    <div class="items-card">
+      <h3><span style="color:#ef4444;">↘</span> Least Selling Items</h3>
+      <div class="item-row">
+        <span class="item-rank">#1</span>
+        <div class="item-info">
+          <div class="item-name">Champagne</div>
+          <div class="item-sold">12 sold</div>
+        </div>
+        <span class="item-revenue gray-text">$360</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#2</span>
+        <div class="item-info">
+          <div class="item-name">Cognac</div>
+          <div class="item-sold">18 sold</div>
+        </div>
+        <span class="item-revenue gray-text">$450</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#3</span>
+        <div class="item-info">
+          <div class="item-name">Vegan Burger</div>
+          <div class="item-sold">23 sold</div>
+        </div>
+        <span class="item-revenue gray-text">$322</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#4</span>
+        <div class="item-info">
+          <div class="item-name">Salad</div>
+          <div class="item-sold">28 sold</div>
+        </div>
+        <span class="item-revenue gray-text">$308</span>
+      </div>
+      <div class="item-row">
+        <span class="item-rank">#5</span>
+        <div class="item-info">
+          <div class="item-name">Wine Spritzer</div>
+          <div class="item-sold">31 sold</div>
+        </div>
+        <span class="item-revenue gray-text">$279</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STAFF + EVENT PERFORMANCE ══ -->
+  <div class="perf-grid">
+    <div class="perf-card">
+      <h3><span style="color:#a855f7;">👤</span> Staff Performance</h3>
+      <div class="perf-row">
+        <div class="perf-num">1</div>
+        <div class="perf-info">
+          <div class="perf-name">Marcus</div>
+          <div class="perf-sub">156 orders &nbsp;·&nbsp; $21.92 avg ticket</div>
+        </div>
+        <div class="perf-right">
+          <span class="perf-val green-text">$3,420</span>
+          <span>🏆</span>
+        </div>
+      </div>
+      <div class="perf-row">
+        <div class="perf-num">2</div>
+        <div class="perf-info">
+          <div class="perf-name">Sarah</div>
+          <div class="perf-sub">142 orders &nbsp;·&nbsp; $22.39 avg ticket</div>
+        </div>
+        <div class="perf-right">
+          <span class="perf-val green-text">$3,180</span>
+        </div>
+      </div>
+      <div class="perf-row">
+        <div class="perf-num">3</div>
+        <div class="perf-info">
+          <div class="perf-name">Jordan</div>
+          <div class="perf-sub">138 orders &nbsp;·&nbsp; $20.94 avg ticket</div>
+        </div>
+        <div class="perf-right">
+          <span class="perf-val green-text">$2,890</span>
+        </div>
+      </div>
+      <div class="perf-row">
+        <div class="perf-num">4</div>
+        <div class="perf-info">
+          <div class="perf-name">Alex</div>
+          <div class="perf-sub">128 orders &nbsp;·&nbsp; $20.70 avg ticket</div>
+        </div>
+        <div class="perf-right">
+          <span class="perf-val green-text">$2,650</span>
+        </div>
+      </div>
+      <div class="perf-row">
+        <div class="perf-num">5</div>
+        <div class="perf-info">
+          <div class="perf-name">Taylor</div>
+          <div class="perf-sub">119 orders &nbsp;·&nbsp; $19.66 avg ticket</div>
+        </div>
+        <div class="perf-right">
+          <span class="perf-val green-text">$2,340</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="perf-card">
+      <h3><span style="color:#eab308;">📅</span> Event Performance</h3>
+      <div class="event-row">
+        <div>
+          <div class="event-name">Live DJ</div>
+          <div class="event-freq">Every Friday</div>
+        </div>
+        <div class="event-right">
+          <div class="perf-val green-text">$8,450</div>
+          <div class="event-visitors">687 visitors</div>
+        </div>
+      </div>
+      <div class="event-row">
+        <div>
+          <div class="event-name">Trivia Night</div>
+          <div class="event-freq">Every Wednesday</div>
+        </div>
+        <div class="event-right">
+          <div class="perf-val green-text">$4,230</div>
+          <div class="event-visitors">412 visitors</div>
+        </div>
+      </div>
+      <div class="event-row">
+        <div>
+          <div class="event-name">Ladies Night</div>
+          <div class="event-freq">Every Tuesday</div>
+        </div>
+        <div class="event-right">
+          <div class="perf-val green-text">$5,100</div>
+          <div class="event-visitors">523 visitors</div>
+        </div>
+      </div>
+      <div class="event-row">
+        <div>
+          <div class="event-name">Regular Night</div>
+          <div class="event-freq">Mon/Thu</div>
+        </div>
+        <div class="event-right">
+          <div class="perf-val green-text">$3,850</div>
+          <div class="event-visitors">398 visitors</div>
+        </div>
+      </div>
+      <div class="event-row">
+        <div>
+          <div class="event-name">Sports Viewing</div>
+          <div class="event-freq">Game Days</div>
+        </div>
+        <div class="event-right">
+          <div class="perf-val green-text">$6,780</div>
+          <div class="event-visitors">589 visitors</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RECOMMENDATIONS ══ -->
+  <div class="recs-section">
+    <div class="section-title"><span class="icon">💡</span> Recommendations</div>
+    <div class="recs-grid">
+      <div class="rec-card">
+        <div class="rec-header">
+          <div class="rec-title">Launch Ladies Night on Tuesdays</div>
+          <span class="badge badge-high">high impact</span>
+        </div>
+        <div class="rec-body">
+          Tuesday shows lowest traffic (298 visitors). Gender ratio is 52% men / 48% women.<br><br>
+          Offer drink specials for women to boost Tuesday numbers by attracting more female customers.
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-header">
+          <div class="rec-title">Extend Happy Hour to 7pm</div>
+          <span class="badge badge-medium">medium impact</span>
+        </div>
+        <div class="rec-body">
+          Traffic jumps 50% between 6pm–7pm. Customers arrive earlier on weekends.<br><br>
+          Move happy hour from 4–6pm to 5–7pm to capture peak arrival time.
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-header">
+          <div class="rec-title">Add Live Music on Thursdays</div>
+          <span class="badge badge-high">high impact</span>
+        </div>
+        <div class="rec-body">
+          Thursday traffic (456) is 25% lower than Friday despite good gender balance.<br><br>
+          Book local bands 8–11pm to position Thursday as the weekend kickoff night.
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-header">
+          <div class="rec-title">Optimize Late Night Menu</div>
+          <span class="badge badge-medium">medium impact</span>
+        </div>
+        <div class="rec-body">
+          Traffic remains strong until 11pm (98 visitors) but drops sharply after midnight.<br><br>
+          Promote food specials 10pm–midnight to keep customers longer and increase per-visit revenue.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REVENUE OPTIMIZATION ══ -->
+  <div class="opt-section">
+    <div class="section-title"><span style="color:#22c55e;">$</span> Revenue Optimization</div>
+    <div class="opt-grid">
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Create IPA Flight Promotion</div>
+          <span class="badge badge-high">high impact</span>
+        </div>
+        <div class="opt-body">
+          IPAs are your top seller (342 sold, $2,394 revenue). High demand with strong margins.<br><br>
+          Introduce a craft IPA flight for $18 to upsell customers and increase average ticket by 25%.
+        </div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Rebrand Low Performers as Premium</div>
+          <span class="badge badge-medium">medium impact</span>
+        </div>
+        <div class="opt-body">
+          Champagne and Cognac have low sales but high per-unit value. Only 30 combined sales this week.<br><br>
+          Market as "VIP Bottle Service" with table reservations to attract high-spending groups.
+        </div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Bundle Wings with Beer Specials</div>
+          <span class="badge badge-high">high impact</span>
+        </div>
+        <div class="opt-body">
+          Wings ($2,244 revenue) and IPAs both perform well but are purchased separately.<br><br>
+          Offer "Beer + Wings" combo for $15 during happy hour to increase food attachment rate.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STAFF OPTIMIZATION ══ -->
+  <div class="opt-section">
+    <div class="section-title"><span style="color:#a855f7;">👤</span> Staff Optimization</div>
+    <div class="opt-grid">
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Add 2 Bartenders on Friday 8–11pm</div>
+          <span class="badge badge-high">high impact</span>
+        </div>
+        <div class="opt-body">
+          Peak traffic (156 visitors/hour) vs. 3 current bartenders creates 12min wait times.<br><br>
+          Schedule Marcus and Sarah (top performers) for Friday rush to reduce wait to 6min and capture $840 in lost sales.
+        </div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Reduce Staff on Tuesday Before 7pm</div>
+          <span class="badge badge-medium">medium impact</span>
+        </div>
+        <div class="opt-body">
+          Only 15 visitors before 7pm on Tuesdays, but 4 staff scheduled.<br><br>
+          Start with 2 staff, add 2 more at 7pm when traffic jumps to save $180/week in labor.
+        </div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-header">
+          <div class="opt-title">Pair New Staff with Top Performers</div>
+          <span class="badge badge-medium">medium impact</span>
+        </div>
+        <div class="opt-body">
+          Taylor has lowest avg ticket ($19.66) vs. Sarah ($22.39) — 12% difference.<br><br>
+          Shadow Taylor with Sarah during Thursday shift to learn upselling techniques.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .content -->
+
+<!-- ══ CHARTS JS ══ -->
+<script>
+  const gridColor = '#2a2a2a';
+  const labelColor = '#888';
+
+  const defaultOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        grid: { color: gridColor },
+        ticks: { color: labelColor, font: { size: 10 } }
+      },
+      y: {
+        grid: { color: gridColor },
+        ticks: { color: labelColor, font: { size: 10 } }
+      }
+    }
+  };
+
+  // Hourly Foot Traffic (line)
+  new Chart(document.getElementById('hourlyChart'), {
+    type: 'line',
+    data: {
+      labels: ['1am','3am','5am','7am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
+      datasets: [{
+        data: [3, 2, 2, 4, 6, 10, 20, 15, 45, 120, 158, 95],
+        borderColor: '#4d94ff',
+        backgroundColor: 'transparent',
+        tension: 0.4,
+        pointRadius: 2,
+        borderWidth: 2
+      }]
+    },
+    options: { ...defaultOptions }
+  });
+
+  // Weekly Traffic Trend (bar)
+  new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [{
+        data: [320, 298, 387, 456, 612, 745, 510],
+        backgroundColor: '#4d94ff',
+        borderRadius: 4
+      }]
+    },
+    options: { ...defaultOptions }
+  });
+
+  // Gender Pie
+  new Chart(document.getElementById('genderPieChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Men 52%', 'Women 48%'],
+      datasets: [{
+        data: [52, 48],
+        backgroundColor: ['#4d94ff', '#ff4da6'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            color: '#aaa',
+            font: { size: 12 },
+            padding: 16
+          }
+        }
+      }
+    }
+  });
+
+  // Hourly Gender Breakdown (bar)
+  new Chart(document.getElementById('genderBarChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1am','3am','5am','7am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
+      datasets: [
+        {
+          label: 'men',
+          data: [2,1,1,2,3,5,10,8,20,55,70,40],
+          backgroundColor: '#4d94ff',
+          borderRadius: 2
+        },
+        {
+          label: 'women',
+          data: [1,1,1,2,3,5,10,7,25,65,80,55],
+          backgroundColor: '#ff4da6',
+          borderRadius: 2
+        }
+      ]
+    },
+    options: {
+      ...defaultOptions,
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+
+</body>
+</html>
